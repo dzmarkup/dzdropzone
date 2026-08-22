@@ -397,11 +397,55 @@
 
   /* Small windows: the unit would be postage-stamp sized, so drop the
      speakers and let the screen have the room. */
+  /* ── SUNY remote on the left edge ──────────────────────────────── */
+  .remote {
+    position: fixed; left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: calc(var(--u) * 8.4);
+    background: linear-gradient(135deg, #1a1a22 0%, #0d0d12 100%);
+    border: 1px solid #33333f;
+    border-radius: calc(var(--u) * 0.6);
+    padding: calc(var(--u) * 0.8);
+    display: flex; flex-direction: column; gap: calc(var(--u) * 0.6);
+    box-shadow: 0 0 calc(var(--u) * 2) var(--neon-dim);
+    z-index: 7;
+  }
+  .remote-brand {
+    text-align: center; font-size: calc(var(--u) * 1.2); font-weight: 900;
+    letter-spacing: .28em; color: var(--neon); text-shadow: 0 0 calc(var(--u) * 0.8) var(--neon);
+    margin-bottom: calc(var(--u) * 0.4);
+  }
+  .remote-display {
+    background: #0b0b11; border: 1px solid #26262f; border-radius: 2px;
+    padding: calc(var(--u) * 0.4); text-align: center;
+    font-size: calc(var(--u) * 0.8); color: var(--neon);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-shadow: 0 0 calc(var(--u) * 0.6) var(--neon-soft);
+    min-height: calc(var(--u) * 2.2);
+    overflow: hidden; word-break: break-word;
+  }
+  .remote-buttons {
+    display: flex; flex-direction: column; gap: calc(var(--u) * 0.4);
+  }
+  .remote button {
+    background: radial-gradient(circle at 35% 30%, #3d3d4a, #1a1a22);
+    border: 1px solid #33333f; border-radius: 2px;
+    color: #9a9aaa; cursor: pointer; font-size: calc(var(--u) * 0.9);
+    padding: calc(var(--u) * 0.35); text-transform: uppercase; letter-spacing: .06em;
+    transition: all .12s ease;
+  }
+  .remote button:hover { color: var(--neon); border-color: var(--neon); box-shadow: 0 0 calc(var(--u) * 0.6) var(--neon-soft); }
+  .remote button:active { transform: scale(0.95); }
+  .remote-vol-row { display: flex; gap: calc(var(--u) * 0.2); }
+  .remote-vol-row button { flex: 1; }
+  .remote-info { font-size: calc(var(--u) * 0.65); color: #55556a; text-align: center; line-height: 1.3; }
+
   @media (max-width: 900px), (max-height: 520px) {
     .speaker { display: none; }
     .column { width: min(92vw, calc(var(--u) * 100)); }
     .stack { width: 88%; }
     .shelf { width: min(60vw, 300px); }
+    .remote { display: none; }
   }
 </style>
 </head>
@@ -463,6 +507,22 @@
       <div class="badge">DZ</div>
     </div>
   </div>
+</div>
+
+<div class="remote">
+  <div class="remote-brand">SUNY</div>
+  <div class="remote-display" id="remoteDisplay">─────</div>
+  <div class="remote-buttons">
+    <button id="btnSkipPrev" type="button" title="Previous">⏮ Prev</button>
+    <button id="btnPlayPause" type="button" title="Play/Pause">⏯ Play</button>
+    <button id="btnSkipNext" type="button" title="Next">Next ⏭</button>
+    <div class="remote-vol-row">
+      <button id="btnVolDown" type="button" title="Volume Down">− Vol</button>
+      <button id="btnVolUp" type="button" title="Volume Up">Vol +</button>
+    </div>
+    <button id="btnMute" type="button" title="Mute">🔇 Mute</button>
+  </div>
+  <div class="remote-info" id="remoteInfo">Ready</div>
 </div>
 
 <aside class="shelf" id="shelf" tabindex="0">
@@ -858,6 +918,63 @@
   });
   idle.addEventListener('click', function () { picker.click(); });
   picker.addEventListener('change', function () { take(picker.files); });
+
+  // ── remote control buttons ──────────────────────────────────────
+  var remoteDisplay = document.getElementById('remoteDisplay');
+  var remoteInfo = document.getElementById('remoteInfo');
+  var shelfTapes = [];
+  var currentTapeIx = -1;
+
+  function updateRemoteDisplay() {
+    if (screenEl.hidden && idle.hidden) {
+      remoteDisplay.textContent = '─────';
+      remoteInfo.textContent = 'Ready';
+    } else if (screenEl.hidden) {
+      remoteDisplay.textContent = idle.textContent.slice(0, 20);
+      remoteInfo.textContent = 'Playing';
+    } else {
+      remoteDisplay.textContent = (screenEl.src ? 'Playing…' : '─────');
+      remoteInfo.textContent = screenEl.paused ? 'Paused' : 'Playing';
+    }
+  }
+
+  document.getElementById('btnPlayPause').addEventListener('click', function () {
+    if (screenEl.paused) screenEl.play();
+    else screenEl.pause();
+    updateRemoteDisplay();
+  });
+
+  document.getElementById('btnMute').addEventListener('click', function () {
+    screenEl.muted = !screenEl.muted;
+    updateRemoteDisplay();
+  });
+
+  document.getElementById('btnVolUp').addEventListener('click', function () {
+    screenEl.volume = Math.min(1, screenEl.volume + 0.1);
+  });
+
+  document.getElementById('btnVolDown').addEventListener('click', function () {
+    screenEl.volume = Math.max(0, screenEl.volume - 0.1);
+  });
+
+  document.getElementById('btnSkipNext').addEventListener('click', function () {
+    shelfTapes = Array.prototype.slice.call(shelf.querySelectorAll('.tape'));
+    if (!shelfTapes.length) return;
+    currentTapeIx = shelfTapes.findIndex(function (t) { return t.classList.contains('on'); });
+    currentTapeIx = (currentTapeIx + 1) % shelfTapes.length;
+    shelfTapes[currentTapeIx].click();
+  });
+
+  document.getElementById('btnSkipPrev').addEventListener('click', function () {
+    shelfTapes = Array.prototype.slice.call(shelf.querySelectorAll('.tape'));
+    if (!shelfTapes.length) return;
+    currentTapeIx = shelfTapes.findIndex(function (t) { return t.classList.contains('on'); });
+    currentTapeIx = (currentTapeIx - 1 + shelfTapes.length) % shelfTapes.length;
+    shelfTapes[currentTapeIx].click();
+  });
+
+  screenEl.addEventListener('play', updateRemoteDisplay);
+  screenEl.addEventListener('pause', updateRemoteDisplay);
 })();
 </script>
 </body>
