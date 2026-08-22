@@ -104,7 +104,7 @@
   }
   .mirror {
     position: relative;
-    width: 42vw; max-width: 760px; min-width: 280px;
+    width: 70vw; max-width: 1260px; min-width: 280px;
     aspect-ratio: 2.6 / 1;
     margin-top: -.6vh;
     padding: 1.1vh;
@@ -147,18 +147,37 @@
      width even while faded out. */
   .dimmer {
     position: absolute; left: 50%; bottom: -3.4vh; transform: translateX(-50%);
-    display: flex; align-items: center; gap: .5vh;
+    display: flex; align-items: center; gap: .9vh;
     padding: .3vh .6vh; border-radius: 0 0 .9vh .9vh;
     background: linear-gradient(to bottom, #2e1e44, #1d1230);
     box-shadow: 0 .5vh 1vh rgba(0,0,0,.5);
   }
-  .dimmer button {
-    width: 3.4vh; height: 3.4vh; line-height: 1; cursor: pointer;
-    background: rgba(20,8,40,.75); color: #ffd9f3;
-    border: 1px solid rgba(255,47,185,.45); border-radius: .6vh;
-    font: inherit; font-size: 1.4vh;
+  .dimmer input[type="range"] {
+    width: 16vh; height: 2vh; cursor: pointer;
+    background: transparent; appearance: none; -webkit-appearance: none;
+    border: none; padding: 0;
   }
-  .dimmer button:hover { border-color: var(--grid-2); color: #fff; }
+  .dimmer input[type="range"]::-webkit-slider-thumb {
+    appearance: none; -webkit-appearance: none;
+    width: 2.2vh; height: 2.2vh; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffd9f3, #c8a9e8 70%);
+    border: 1px solid rgba(255,47,185,.6);
+    cursor: pointer; box-shadow: 0 .2vh .6vh rgba(0,0,0,.5);
+  }
+  .dimmer input[type="range"]::-moz-range-thumb {
+    width: 2.2vh; height: 2.2vh; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffd9f3, #c8a9e8 70%);
+    border: 1px solid rgba(255,47,185,.6);
+    cursor: pointer; box-shadow: 0 .2vh .6vh rgba(0,0,0,.5);
+  }
+  .dimmer input[type="range"]::-webkit-slider-runnable-track {
+    height: 1.4vh; background: linear-gradient(to right, rgba(255,47,185,.3) 0%, rgba(35,224,255,.3) 100%);
+    border-radius: .7vh;
+  }
+  .dimmer input[type="range"]::-moz-range-track {
+    height: 1.4vh; background: linear-gradient(to right, rgba(255,47,185,.3) 0%, rgba(35,224,255,.3) 100%);
+    border-radius: .7vh;
+  }
   .dimmer .pct {
     font-size: 1.15vh; letter-spacing: .06em; color: #c8a9e8;
     min-width: 4.4vh; text-align: center;
@@ -252,20 +271,19 @@
     <div class="stem-ball"></div>
     <div class="mirror">
       <div class="glass" id="glass">
-        <div class="idle" id="idle">Pick something from the shelf<br>or drop a video on the dashboard</div>
+        <div class="idle" id="idle">Pick something from the shelf<br>or drop a video or song on the dashboard</div>
         <video id="screen" playsinline loop hidden></video>
       </div>
       <div class="sheen"></div>
       <div class="dimmer">
-        <button id="dimUp" type="button" title="More solid">▲</button>
+        <input type="range" id="dimSlider" min="0" max="100" value="100" title="Adjust TV opacity">
         <div class="pct" id="dimPct">100%</div>
-        <button id="dimDown" type="button" title="See the road through it">▼</button>
       </div>
     </div>
   </div>
 
   <aside class="shelf" id="shelf" tabindex="0">
-    <div class="shelf-title">Your videos</div>
+    <div class="shelf-title">Videos & Music</div>
     <div class="shelf-note" id="shelfNote">Looking for your folder…</div>
   </aside>
 
@@ -281,7 +299,7 @@
   </div>
 </div>
 
-<input type="file" id="picker" accept="video/*,image/*" hidden>
+<input type="file" id="picker" accept="video/*,image/*,audio/*" hidden>
 
 <script src="../detect.js"></script>
 <script src="../folder.js"></script>
@@ -510,22 +528,20 @@
   });
 
   // ── the dimmer ────────────────────────────────────────────────────
-  const STEPS = [50, 70, 80, 90, 100];
-  let step = STEPS.length - 1;
   const glass = document.getElementById('glass');
   const dimPct = document.getElementById('dimPct');
-  function applyDim() {
-    glass.style.opacity = (STEPS[step] / 100).toFixed(2);
-    dimPct.textContent = STEPS[step] + '%';
-    try { localStorage.setItem('dz-drivein-dim', String(step)); } catch (e) {}
+  const dimSlider = document.getElementById('dimSlider');
+  function applyDim(val) {
+    glass.style.opacity = (val / 100).toFixed(2);
+    dimPct.textContent = val + '%';
+    try { localStorage.setItem('dz-drivein-dim', String(val)); } catch (e) {}
   }
-  document.getElementById('dimUp').addEventListener('click', () => { step = Math.min(STEPS.length - 1, step + 1); applyDim(); });
-  document.getElementById('dimDown').addEventListener('click', () => { step = Math.max(0, step - 1); applyDim(); });
+  dimSlider.addEventListener('input', (e) => applyDim(parseInt(e.target.value, 10)));
 
   // Remember how it was left -- the ride should be yours.
   try {
     const d = parseInt(localStorage.getItem('dz-drivein-dim'), 10);
-    if (d >= 0 && d < STEPS.length) step = d;
+    if (d >= 0 && d <= 100) { dimSlider.value = d; applyDim(d); }
     const p = parseInt(localStorage.getItem('dz-drivein-pal'), 10);
     if (p > 0 && p < PALETTES.length) {
       pal = p;
@@ -536,7 +552,7 @@
     const s = parseInt(localStorage.getItem('dz-drivein-speed'), 10);
     if (s > 0 && s < SPEEDS.length) { si = s; speed = SPEEDS[s][0]; btnSpeed.textContent = SPEEDS[s][1]; }
   } catch (e) {}
-  applyDim();
+  applyDim(100);
 
   // ── playing something ─────────────────────────────────────────────
   const screen = document.getElementById('screen');
@@ -551,6 +567,14 @@
       idle.hidden = false;
       idle.textContent = '';
       idle.style.background = `#060010 url("${showingUrl}") center/contain no-repeat`;
+    } else if (/^audio\//.test(file.type)) {
+      screen.hidden = true;
+      idle.hidden = false;
+      idle.textContent = 'Now playing';
+      idle.style.background = `linear-gradient(135deg, rgba(109,27,107,.6), rgba(45,30,68,.6)), url("${showingUrl}") center/cover`;
+      const audio = new Audio(showingUrl);
+      audio.play().catch(() => {});
+      extractAudioMetadata(file, audio);
     } else {
       idle.hidden = true;
       screen.hidden = false;
@@ -561,6 +585,39 @@
     if (row) row.classList.add('on');
   }
 
+  function extractAudioMetadata(file, audioEl) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        let title = '', artist = '', album = '', artwork = null;
+
+        // Simple ID3v2 extraction for title/artist/album
+        if (data[0] === 0x49 && data[1] === 0x44 && data[2] === 0x33) {
+          let pos = 10;
+          const version = data[3];
+          while (pos < Math.min(data.length, 100000) && (title || artist || album)) {
+            if (data[pos] === 0x54 && data[pos+1] === 0x49 && data[pos+2] === 0x54 && data[pos+3] === 0x32) {
+              const size = (data[pos+4] << 24) | (data[pos+5] << 16) | (data[pos+6] << 8) | data[pos+7];
+              title = new TextDecoder().decode(data.slice(pos+11, pos+11+Math.min(size-1, 100)));
+              break;
+            }
+            pos++;
+          }
+        }
+
+        // Display metadata on screen
+        const filename = file.name.replace(/\.[^.]+$/, '');
+        const display = title || filename;
+        idle.textContent = display;
+
+      } catch (err) {
+        idle.textContent = file.name.replace(/\.[^.]+$/, '');
+      }
+    };
+    reader.readAsArrayBuffer(file.slice(0, 100000));
+  }
+
   // ── the shelf, read from the folder ───────────────────────────────
   const shelf = document.getElementById('shelf');
   const note = document.getElementById('shelfNote');
@@ -569,8 +626,8 @@
   function buildShelf(files) {
     shelf.querySelectorAll('.tape').forEach((el) => el.remove());
     if (!files.length) {
-      say('Nothing in <b>Videos</b> yet. Drop one on the dashboard, or add ' +
-          'some through the <a href="../">Drop Zone</a>.');
+      say('Nothing in <b>Videos & Music</b> yet. Drop some on the dashboard, or add ' +
+          'them through the <a href="../">Drop Zone</a>.');
       return;
     }
     note.hidden = true;
@@ -585,26 +642,37 @@
       });
       shelf.appendChild(row);
 
-      // A real frame off the file, so the shelf reads as tapes rather than a
-      // list of filenames. Seeking off frame zero avoids the black first frame.
       f.handle.getFile().then((file) => {
-        const v = document.createElement('video');
-        const u = URL.createObjectURL(file);
-        let done = false;
-        const finish = () => { if (!done) { done = true; URL.revokeObjectURL(u); } };
-        v.muted = true; v.preload = 'metadata';
-        v.onloadeddata = () => {
-          try {
-            const c = document.createElement('canvas');
-            c.width = 96; c.height = 54;
-            c.getContext('2d').drawImage(v, 0, 0, 96, 54);
-            tn.src = c.toDataURL('image/jpeg', .7);
-          } catch (e) { /* a codec the canvas won't take */ }
-          finish();
-        };
-        v.onerror = finish;
-        setTimeout(finish, 5000);   // a codec this browser can't decode never fires either
-        v.src = u; v.currentTime = 0.6;
+        if (/^audio\//.test(file.type)) {
+          const c = document.createElement('canvas');
+          c.width = 96; c.height = 54;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#1d1230';
+          ctx.fillRect(0, 0, 96, 54);
+          ctx.fillStyle = '#c8a9e8';
+          ctx.font = 'bold 12px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('♪', 48, 30);
+          tn.src = c.toDataURL('image/jpeg', .7);
+        } else {
+          const v = document.createElement('video');
+          const u = URL.createObjectURL(file);
+          let done = false;
+          const finish = () => { if (!done) { done = true; URL.revokeObjectURL(u); } };
+          v.muted = true; v.preload = 'metadata';
+          v.onloadeddata = () => {
+            try {
+              const c = document.createElement('canvas');
+              c.width = 96; c.height = 54;
+              c.getContext('2d').drawImage(v, 0, 0, 96, 54);
+              tn.src = c.toDataURL('image/jpeg', .7);
+            } catch (e) { /* a codec the canvas won't take */ }
+            finish();
+          };
+          v.onerror = finish;
+          setTimeout(finish, 5000);
+          v.src = u; v.currentTime = 0.6;
+        }
       }).catch(() => {});
     });
   }
@@ -645,7 +713,7 @@
   // ── dropping on the dashboard ─────────────────────────────────────
   const picker = document.getElementById('picker');
   const take = (files) => {
-    const f = Array.prototype.find.call(files || [], (x) => /^(video|image)\//.test(x.type));
+    const f = Array.prototype.find.call(files || [], (x) => /^(video|image|audio)\//.test(x.type));
     if (f) playFile(f, null);
   };
   // Both dragover AND drop must be cancelled, on window rather than on the
