@@ -528,11 +528,11 @@
   });
 
   // ── the dimmer ────────────────────────────────────────────────────
-  const glass = document.getElementById('glass');
+  const mirror = document.querySelector('.mirror');
   const dimPct = document.getElementById('dimPct');
   const dimSlider = document.getElementById('dimSlider');
   function applyDim(val) {
-    glass.style.opacity = (val / 100).toFixed(2);
+    mirror.style.opacity = (val / 100).toFixed(2);
     dimPct.textContent = val + '%';
     try { localStorage.setItem('dz-drivein-dim', String(val)); } catch (e) {}
   }
