@@ -115,7 +115,7 @@
   .unit {
     position: relative; z-index: 1;
     display: flex; align-items: flex-end; justify-content: center;
-    gap: calc(var(--u) * 2.4);
+    gap: calc(var(--u) * 8);
   }
 
   /* ── speakers ──────────────────────────────────────────────────── */
@@ -243,90 +243,84 @@
     background: var(--neon); box-shadow: 0 0 calc(var(--u) * 1.2) var(--neon);
   }
 
-  /* ── the stack ─────────────────────────────────────────────────── */
+  /* ── retro VCR ─────────────────────────────────────────────────── */
 
-  /* A shade narrower than the screen above it, the way a cabinet sits under
-     a wall-mounted TV. A percentage, so it tracks the screen at any size. */
   .stack {
-    width: 72%;
-    display: flex; flex-direction: column; gap: calc(var(--u) * 0.55);
+    width: 72%; display: flex; flex-direction: column; justify-content: center;
+    gap: 0; position: relative;
   }
-  .gear {
-    height: calc(var(--u) * 6.6);
-    border-radius: calc(var(--u) * 0.45);
-    background: linear-gradient(180deg, var(--case-lip) 0%, var(--case) 18%, #101016 100%);
-    border: 1px solid #2b2b35;
-    box-shadow: inset 0 1px 0 #3a3a47,
-      0 0 calc(var(--u) * 1.6) var(--neon-dim),
-      0 calc(var(--u) * .5) calc(var(--u) * 1.2) rgba(0,0,0,.5);
-    display: flex; align-items: center; gap: calc(var(--u) * 1.2);
-    padding: 0 calc(var(--u) * 1.4);
-  }
-  .gear .name {
-    font-size: calc(var(--u) * 1.05); letter-spacing: .24em;
-    color: #6e6e83; text-transform: uppercase; white-space: nowrap;
+  .gear { display: none; }
+
+  .vcr {
+    width: 100%; height: calc(var(--u) * 8.2);
+    background: linear-gradient(180deg, #0f0f15 0%, #0a0a0e 100%);
+    border: 1px solid #1a1a22; border-radius: calc(var(--u) * 0.3);
+    box-shadow: inset 0 1px 0 #1f1f28, 0 0 calc(var(--u) * 2) var(--neon-dim),
+      0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(0,0,0,.7);
+    display: flex; align-items: center; padding: calc(var(--u) * 1.2) calc(var(--u) * 1.6);
+    gap: calc(var(--u) * 1.4);
   }
 
-  /* meters -- segmented, because a needle at this size is one pixel wide */
-  .meters { display: flex; flex-direction: column; gap: calc(var(--u) * .45); flex: 1; min-width: 0; }
-  .meter { display: flex; gap: calc(var(--u) * .28); align-items: center; }
-  .meter .ch { font-size: calc(var(--u) * .95); color: #55556a; width: calc(var(--u) * 1.4); }
-  .seg {
-    flex: 1; height: calc(var(--u) * 1.15); border-radius: 1px;
-    background: #191921; box-shadow: inset 0 0 0 1px #22222c;
-  }
-  .seg.on   { background: #35d07a; box-shadow: 0 0 calc(var(--u) * .5) #35d07a99; }
-  .seg.on.y { background: #e8c341; box-shadow: 0 0 calc(var(--u) * .5) #e8c34199; }
-  .seg.on.r { background: #e8524a; box-shadow: 0 0 calc(var(--u) * .5) #e8524a99; }
-
-  .dial {
-    width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2); border-radius: 50%;
-    background: radial-gradient(circle at 38% 34%, #3d3d4a, #1a1a22 62%, #0d0d12 100%);
-    border: 1px solid #33333f; position: relative; flex: 0 0 auto;
-  }
-  .dial::after {
-    content: ''; position: absolute; left: 50%; top: 12%;
-    width: 2px; height: 34%; margin-left: -1px; border-radius: 2px;
-    background: var(--neon); box-shadow: 0 0 calc(var(--u) * .8) var(--neon);
-    transform-origin: 50% 100%;
+  .vcr-display {
+    flex: 1;
+    background: #000; border: 1px solid #0d0d12;
+    border-radius: 2px; padding: calc(var(--u) * 0.6) calc(var(--u) * 0.9);
+    text-align: center; min-height: calc(var(--u) * 2);
+    font: 700 calc(var(--u) * 2.2)/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: #ff0000; text-shadow: 0 0 calc(var(--u) * 0.8) #ff0000;
+    letter-spacing: .12em;
+    cursor: pointer; user-select: none;
   }
 
-  /* cassette reels */
-  .reels { display: flex; gap: calc(var(--u) * 1.1); flex: 0 0 auto; }
-  .reel {
-    width: calc(var(--u) * 3.4); height: calc(var(--u) * 3.4); border-radius: 50%;
-    background: radial-gradient(circle, #0e0e13 0 26%, #2a2a34 27% 100%);
-    border: 1px solid #33333f; position: relative;
-  }
-  .reel::before, .reel::after {
-    content: ''; position: absolute; inset: 42% 6%;
-    background: #4b4b5c; border-radius: 1px;
-  }
-  .reel::after { transform: rotate(90deg); }
+  .vcr-display.blinking { animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
 
-  /* the disc */
-  .disc {
-    width: calc(var(--u) * 4.4); height: calc(var(--u) * 4.4); border-radius: 50%;
-    flex: 0 0 auto;
-    background:
-      radial-gradient(circle, #14141a 0 17%, transparent 18%),
-      conic-gradient(from 0deg, #6f7cff, #46e0d0, #f5e56b, #ff6fae, #6f7cff);
-    opacity: .85;
-    border: 1px solid #33333f;
+  .vcr-power {
+    width: calc(var(--u) * 1.2); height: calc(var(--u) * 1.2); border-radius: 50%;
+    background: #cc0000; box-shadow: 0 0 calc(var(--u) * 1) #ff3333 inset,
+      0 0 calc(var(--u) * 1.4) #ff0000;
+    flex: 0 0 auto; position: relative;
+  }
+  .vcr-power::before {
+    content: ''; position: absolute; inset: 20%;
+    background: #ff6666; border-radius: 50%; filter: blur(2px);
   }
 
-  .lcd {
-    font: 600 calc(var(--u) * 1.5)/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    color: var(--neon);
-    text-shadow: 0 0 calc(var(--u) * 1) var(--neon-soft);
-    background: #0b0b11; border: 1px solid #26262f; border-radius: 2px;
-    padding: calc(var(--u) * .5) calc(var(--u) * .8);
-    flex: 0 0 auto; letter-spacing: .06em;
+  .vcr-color {
+    width: calc(var(--u) * 1.2); height: calc(var(--u) * 1.2); border-radius: 50%;
+    background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+    border: 1px solid #333; cursor: pointer;
+    flex: 0 0 auto; transition: transform .1s ease;
   }
+  .vcr-color:hover { transform: scale(1.1); }
+  .vcr-color:active { transform: scale(0.95); }
 
-  .spin { animation: spin 3.4s linear infinite; animation-play-state: paused; }
-  body.playing .spin { animation-play-state: running; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* ── retro poster ──────────────────────────────────────────────── */
+  .poster {
+    position: fixed; top: calc(var(--u) * 10);
+    width: calc(var(--u) * 28); height: calc(var(--u) * 42);
+    background: linear-gradient(135deg, #1a0a2e 0%, #0f0520 100%);
+    border: calc(var(--u) * 0.4) solid #d4af37;
+    border-radius: calc(var(--u) * 0.4);
+    box-shadow: 0 0 calc(var(--u) * 3) rgba(212,175,55,.3),
+      0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0,0,0,.8);
+    z-index: 2; pointer-events: none;
+    overflow: hidden;
+  }
+  .poster.left { left: calc(var(--u) * 2); }
+  .poster.right { right: calc(var(--u) * 2); }
+  .poster svg { width: 100%; height: 100%; display: block; }
+
+  /* Hidden meter elements (kept for JS compatibility, not displayed) */
+  .meters { display: none; }
+  .meter { display: none; }
+  .meter .ch { display: none; }
+  .seg { display: none; }
+  .dial { display: none; }
+  .reels { display: none; }
+  .reel { display: none; }
+  .disc { display: none; }
+  .lcd { display: none; }
 
   /* ── the shelf of videos, right side ───────────────────────────── */
   /* Same behaviour as the Drive-In: dark until the cursor comes near the
@@ -397,10 +391,10 @@
 
   /* Small windows: the unit would be postage-stamp sized, so drop the
      speakers and let the screen have the room. */
-  /* ── SUNY remote on the left edge ──────────────────────────────── */
+  /* ── SUNY remote in front of VCR ──────────────────────────────── */
   .remote {
-    position: fixed; left: 0; top: 50%;
-    transform: translateY(-50%);
+    position: fixed; left: 50%; bottom: calc(var(--u) * 1.2);
+    transform: translateX(-50%);
     width: calc(var(--u) * 8.4);
     background: linear-gradient(135deg, #1a1a22 0%, #0d0d12 100%);
     border: 1px solid #33333f;
@@ -408,7 +402,7 @@
     padding: calc(var(--u) * 0.8);
     display: flex; flex-direction: column; gap: calc(var(--u) * 0.6);
     box-shadow: 0 0 calc(var(--u) * 2) var(--neon-dim);
-    z-index: 7;
+    z-index: 8;
   }
   .remote-brand {
     text-align: center; font-size: calc(var(--u) * 1.2); font-weight: 900;
@@ -458,6 +452,96 @@
   <div class="bias inner"></div>
   <div class="bias floor"></div>
 
+  <div class="poster left">
+    <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sunset gradient background -->
+      <defs>
+        <linearGradient id="sunset" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#ff1493;stop-opacity:1" />
+          <stop offset="40%" style="stop-color:#ff6b9d;stop-opacity:1" />
+          <stop offset="70%" style="stop-color:#ffa500;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1a0a2e;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="600" fill="url(#sunset)"/>
+
+      <!-- Lamborghini silhouette -->
+      <g id="lambo" transform="translate(200, 320)">
+        <ellipse cx="0" cy="0" rx="140" ry="50" fill="#1a1a1a" opacity="0.95"/>
+        <path d="M -140 -35 Q -100 -55 -40 -50 L -20 -40 Z" fill="#1a1a1a"/>
+        <path d="M -20 -40 L 20 -45 L 30 -20 L -10 -15 Z" fill="#0a0a0a" opacity="0.8"/>
+        <path d="M -10 -15 L 30 -20 L 50 0 L -5 5 Z" fill="#1a1a1a"/>
+        <path d="M 50 0 L 120 -20 L 140 -35 L 140 0 Z" fill="#1a1a1a"/>
+        <path d="M 120 -20 L 140 -35 L 140 35 L 120 20 Z" fill="#1a1a1a" opacity="0.9"/>
+        <circle cx="-60" cy="50" r="18" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
+        <circle cx="80" cy="50" r="20" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
+      </g>
+
+      <!-- Girl silhouette -->
+      <g id="girl" transform="translate(140, 250)">
+        <circle cx="0" cy="-45" r="18" fill="#1a1a1a"/>
+        <path d="M -15 -50 Q -25 -55 -20 -35 Q -30 -30 -20 -20" fill="#1a1a1a" opacity="0.8"/>
+        <ellipse cx="0" cy="-15" rx="20" ry="25" fill="#1a1a1a"/>
+        <path d="M -18 -20 L -40 -10" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 18 -20 L 35 5" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="0" cy="15" rx="18" ry="20" fill="#1a1a1a"/>
+        <path d="M -12 35 L -8 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
+        <path d="M 12 35 L 16 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="20" cy="75" r="6" fill="#1a1a1a"/>
+      </g>
+
+      <line x1="20" y1="80" x2="380" y2="80" stroke="#ff1493" stroke-width="2" opacity="0.6"/>
+      <line x1="40" y1="520" x2="360" y2="520" stroke="#ffa500" stroke-width="2" opacity="0.6"/>
+      <text x="200" y="570" font-family="Arial, sans-serif" font-size="24" font-weight="bold"
+            text-anchor="middle" fill="#d4af37" opacity="0.7" letter-spacing="3">LAMBO</text>
+    </svg>
+  </div>
+
+  <div class="poster right">
+    <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sunset gradient background -->
+      <defs>
+        <linearGradient id="sunset2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#ff1493;stop-opacity:1" />
+          <stop offset="40%" style="stop-color:#ff6b9d;stop-opacity:1" />
+          <stop offset="70%" style="stop-color:#ffa500;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1a0a2e;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="600" fill="url(#sunset2)"/>
+
+      <!-- Testarossa silhouette (wider, flatter profile) -->
+      <g id="testarossa" transform="translate(200, 320) scale(-1, 1)">
+        <ellipse cx="0" cy="0" rx="155" ry="48" fill="#1a1a1a" opacity="0.95"/>
+        <path d="M -155 -32 Q -110 -58 -30 -52 L 0 -42 Z" fill="#1a1a1a"/>
+        <path d="M 0 -42 L 35 -48 L 45 -18 L 5 -15 Z" fill="#0a0a0a" opacity="0.8"/>
+        <path d="M 5 -15 L 45 -18 L 65 8 L 10 12 Z" fill="#1a1a1a"/>
+        <path d="M 65 8 L 135 -15 L 155 -32 L 155 15 Z" fill="#1a1a1a"/>
+        <path d="M 120 -10 L 155 -32 L 155 35 L 125 25 Z" fill="#1a1a1a" opacity="0.9"/>
+        <circle cx="-65" cy="50" r="20" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
+        <circle cx="85" cy="52" r="22" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
+      </g>
+
+      <!-- Girl silhouette (mirrored) -->
+      <g id="girl2" transform="translate(260, 250)">
+        <circle cx="0" cy="-45" r="18" fill="#1a1a1a"/>
+        <path d="M 15 -50 Q 25 -55 20 -35 Q 30 -30 20 -20" fill="#1a1a1a" opacity="0.8"/>
+        <ellipse cx="0" cy="-15" rx="20" ry="25" fill="#1a1a1a"/>
+        <path d="M 18 -20 L 40 -10" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <path d="M -18 -20 L -35 5" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="0" cy="15" rx="18" ry="20" fill="#1a1a1a"/>
+        <path d="M 12 35 L 8 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
+        <path d="M -12 35 L -16 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="-20" cy="75" r="6" fill="#1a1a1a"/>
+      </g>
+
+      <line x1="20" y1="80" x2="380" y2="80" stroke="#ff1493" stroke-width="2" opacity="0.6"/>
+      <line x1="40" y1="520" x2="360" y2="520" stroke="#ffa500" stroke-width="2" opacity="0.6"/>
+      <text x="200" y="570" font-family="Arial, sans-serif" font-size="24" font-weight="bold"
+            text-anchor="middle" fill="#d4af37" opacity="0.7" letter-spacing="3">TESTA</text>
+    </svg>
+  </div>
+
   <div class="unit">
     <div class="speaker">
       <div class="cone tweeter" data-cone="hi"></div>
@@ -475,7 +559,13 @@
       </div>
 
       <div class="stack">
-        <div class="gear">
+        <div class="vcr">
+          <div class="vcr-display" id="vcrDisplay" title="Click to set the time">12:00</div>
+          <div class="vcr-power"></div>
+          <div class="vcr-color" id="vcrColor" title="Change neon color"></div>
+        </div>
+        <!-- Hidden elements for JS compat -->
+        <div class="gear" style="display:none;">
           <span class="name">Amp</span>
           <span class="dial" id="dial"></span>
           <div class="meters">
@@ -483,7 +573,7 @@
             <div class="meter" id="mR"><span class="ch">R</span></div>
           </div>
         </div>
-        <div class="gear">
+        <div class="gear" style="display:none;">
           <span class="name">Deck</span>
           <div class="reels">
             <span class="reel spin"></span>
@@ -492,7 +582,7 @@
           <div class="meters"><div class="meter" id="mT"></div></div>
           <span class="lcd" id="clock">--:--</span>
         </div>
-        <div class="gear">
+        <div class="gear" style="display:none;">
           <span class="name">Disc</span>
           <span class="disc spin"></span>
           <span class="lcd" id="trk">NO DISC</span>
@@ -975,6 +1065,53 @@
 
   screenEl.addEventListener('play', updateRemoteDisplay);
   screenEl.addEventListener('pause', updateRemoteDisplay);
+
+  // ── VCR display and easter eggs ───────────────────────────────
+  var vcrDisplay = document.getElementById('vcrDisplay');
+  var vcrColor = document.getElementById('vcrColor');
+  var clockSet = false;
+
+  // Blinking 12:00 animation
+  vcrDisplay.classList.add('blinking');
+
+  // Clock easter egg: click display to set actual time
+  vcrDisplay.addEventListener('click', function () {
+    clockSet = !clockSet;
+    if (clockSet) {
+      var updateClock = setInterval(function () {
+        var now = new Date();
+        var h = String(now.getHours()).padStart(2, '0');
+        var m = String(now.getMinutes()).padStart(2, '0');
+        vcrDisplay.textContent = h + ':' + m;
+        vcrDisplay.classList.remove('blinking');
+      }, 1000);
+      if (screenEl.src) screenEl.addEventListener('ended', function () { clearInterval(updateClock); });
+    } else {
+      vcrDisplay.textContent = '12:00';
+      vcrDisplay.classList.add('blinking');
+    }
+  });
+
+  // Color button: cycle through full spectrum
+  var SPECTRUM = [
+    ['Red',     '#ff0000'],
+    ['Orange',  '#ff7700'],
+    ['Yellow',  '#ffff00'],
+    ['Green',   '#00ff00'],
+    ['Cyan',    '#00ffff'],
+    ['Blue',    '#0066ff'],
+    ['Purple',  '#9933ff'],
+    ['Magenta', '#ff00ff'],
+  ];
+  var specIx = 0;
+
+  vcrColor.addEventListener('click', function () {
+    specIx = (specIx + 1) % SPECTRUM.length;
+    var hex = SPECTRUM[specIx][1];
+    root.style.setProperty('--neon', hex);
+    root.style.setProperty('--neon-soft', hex + '55');
+    root.style.setProperty('--neon-dim', hex + '22');
+  });
 })();
 </script>
 </body>
