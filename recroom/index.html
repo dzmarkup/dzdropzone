@@ -483,7 +483,7 @@
   </div>
 </div>
 
-<input type="file" id="picker" accept="video/*,image/*" hidden>
+<input type="file" id="picker" accept="video/*,image/*,audio/*" hidden>
 
 <script src="../folder.js"></script>
 <script>
@@ -689,6 +689,21 @@
       idle.textContent = '';
       idle.style.background = '#04040a url("' + showingUrl + '") center/contain no-repeat';
       trk.textContent = 'STILL';
+    } else if (/^audio\//.test(file.type)) {
+      // Audio file: use video element for playback (meters work on its audio)
+      // but hide the visual display
+      screenEl.hidden = true;
+      idle.hidden = false;
+      idle.textContent = '♪ ' + (file.name || '').slice(0, 20).toUpperCase();
+      idle.style.background = 'linear-gradient(135deg, rgba(255,47,177,.2), rgba(45,90,200,.2))';
+      screenEl.src = showingUrl;
+      trk.textContent = (file.name || '').slice(0, 14).toUpperCase().replace(/\.[^.]+$/, '') || 'PLAYING';
+      document.body.classList.add('playing');
+      ensureAudio();
+      screenEl.play().catch(function () {
+        screenEl.muted = true;
+        screenEl.play().catch(function () {});
+      });
     } else {
       idle.hidden = true;
       idle.style.background = '';
@@ -811,7 +826,7 @@
   var picker = document.getElementById('picker');
   function take(files) {
     var f = Array.prototype.filter.call(files || [], function (x) {
-      return /^(video|image)\//.test(x.type);
+      return /^(video|image|audio)\//.test(x.type);
     })[0];
     if (f) playFile(f, null);
   }
