@@ -82,69 +82,51 @@
     box-shadow: 0 0 24px 6px var(--grid-2), 0 0 60px 18px rgba(35,224,255,.35);
   }
 
-  /* ── the rear-view mirror ────────────────────────────────────────── */
+  /* ── the screen display (AR glasses style, no frame) ────────────────────── */
   .mirror-rig {
-    position: absolute; left: 50%; top: 0;
-    transform: translateX(-50%);
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
     display: flex; flex-direction: column; align-items: center;
     z-index: 4;
   }
-  /* The stem runs up off the top of the screen, so the mirror reads as hung
-     from a windscreen rather than floating in mid-air. */
-  .stem {
-    width: 1.4vh; height: 6vh;
-    background: linear-gradient(to bottom, #241634 0%, #3a2650 60%, #4a3164 100%);
-    border-radius: 0 0 .8vh .8vh;
-    box-shadow: inset -.35vh 0 .6vh rgba(0,0,0,.5);
-  }
-  .stem-ball {
-    width: 3vh; height: 3vh; margin-top: -.9vh; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #6a4d86, #2a1a3c 70%);
-    box-shadow: 0 .4vh .8vh rgba(0,0,0,.6);
-  }
+  .stem { display: none; }
+  .stem-ball { display: none; }
   .mirror {
     position: relative;
     width: 70vw; max-width: 1260px; min-width: 280px;
     aspect-ratio: 2.6 / 1;
-    margin-top: -.6vh;
-    padding: 1.1vh;
-    border-radius: 2.2vh;
-    background: linear-gradient(165deg, #3a2650 0%, #1d1230 45%, #2e1e44 100%);
-    box-shadow: 0 2.4vh 5vh rgba(0,0,0,.65), inset 0 .2vh .4vh rgba(255,255,255,.12);
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   .glass {
-    position: absolute; inset: 1.1vh; border-radius: 1.4vh; overflow: hidden;
-    background: #060010;
-    /* Set by the arrows -- at less than 100% the road shows through. */
+    position: absolute; inset: 0; border-radius: 0; overflow: hidden;
+    background: transparent;
+    /* Opacity controlled by dimmer slider -- at less than 100% shows the road through it. */
     opacity: 1; transition: opacity .18s ease;
   }
-  .glass video, .glass .idle {
+  .glass video {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: contain; background: #060010;
+    object-fit: contain; background: transparent;
+  }
+  .glass .idle {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; background: transparent;
+    background-attachment: fixed;
   }
   .idle {
     display: flex; align-items: center; justify-content: center; text-align: center;
     color: #7c6a9c; font-size: 1.5vh; letter-spacing: .2em; text-transform: uppercase;
     padding: 2vh; line-height: 1.8;
   }
-  /* Scanlines, a sheen and a slow flicker. Most of the "old glass" feeling
-     comes from these three, and they cost nothing. */
-  .sheen { position: absolute; inset: 1.1vh; border-radius: 1.4vh; pointer-events: none; }
-  .sheen::before {
-    content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(to bottom, rgba(0,0,0,.18) 0 1px, transparent 1px 3px);
-  }
-  .sheen::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(112deg, rgba(255,255,255,.13) 0 18%, transparent 42%);
-    animation: flick 7.3s infinite steps(40);
-  }
+  /* Minimal sheen -- scanlines and flicker removed for clean AR look */
+  .sheen { position: absolute; inset: 0; border-radius: 0; pointer-events: none; opacity: 0; }
+  .sheen::before { display: none; }
+  .sheen::after { display: none; }
   @keyframes flick { 0%,100% { opacity: .85 } 43% { opacity: .7 } 71% { opacity: 1 } }
 
-  /* Under the mirror, where a real one's day/night tab is. It used to hang
-     off the right cheek, which put it underneath the shelf -- invisible AND
-     unclickable, because the shelf captures the pointer across its whole
-     width even while faded out. */
+  /* Dimmer control repositioned below the AR screen */
   .dimmer {
     position: absolute; left: 50%; bottom: -3.4vh; transform: translateX(-50%);
     display: flex; align-items: center; gap: .9vh;
@@ -566,6 +548,16 @@
       screen.hidden = true;
       idle.hidden = false;
       idle.textContent = '';
+<<<<<<< HEAD
+      idle.style.background = `transparent url("${showingUrl}") center/contain no-repeat`;
+    } else if (/^audio\//.test(file.type)) {
+      screen.hidden = true;
+      idle.hidden = false;
+      idle.textContent = '♫ ' + file.name;
+      idle.style.background = 'transparent';
+      screen.src = showingUrl;
+      screen.play().catch(() => { screen.muted = true; screen.play().catch(() => {}); });
+=======
       idle.style.background = `#060010 url("${showingUrl}") center/contain no-repeat`;
     } else if (/^audio\//.test(file.type)) {
       screen.hidden = true;
@@ -575,6 +567,7 @@
       const audio = new Audio(showingUrl);
       audio.play().catch(() => {});
       extractAudioMetadata(file, audio);
+>>>>>>> origin/main
     } else {
       idle.hidden = true;
       screen.hidden = false;
