@@ -116,6 +116,7 @@
     position: relative; z-index: 1;
     display: flex; align-items: flex-end; justify-content: space-between;
     gap: 0; width: 100%;
+    padding: 0 calc(var(--u) * 8);
   }
 
   /* ── speakers ──────────────────────────────────────────────────── */
@@ -252,6 +253,7 @@
   .gear { display: none; }
 
   .vcr {
+    position: relative;
     width: 100%; height: calc(var(--u) * 8.2);
     background: linear-gradient(180deg, #0f0f15 0%, #0a0a0e 100%);
     border: 1px solid #1a1a22; border-radius: calc(var(--u) * 0.3);
@@ -259,6 +261,64 @@
       0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(0,0,0,.7);
     display: flex; align-items: center; padding: calc(var(--u) * 1.2) calc(var(--u) * 1.6);
     gap: calc(var(--u) * 1.4);
+    margin-top: auto;
+  }
+
+  .vhs-tape {
+    position: absolute;
+    right: calc(var(--u) * 2);
+    top: calc(var(--u) * -3.5);
+    width: calc(var(--u) * 5.5);
+    height: calc(var(--u) * 6.5);
+    background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+    border: 1px solid #333;
+    border-radius: calc(var(--u) * 0.2);
+    padding: calc(var(--u) * 0.6);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    box-shadow: 0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(0,0,0,.8);
+    cursor: pointer;
+    transition: transform .1s ease;
+  }
+  .vhs-tape:hover { transform: translateY(calc(var(--u) * -0.3)); }
+
+  .vhs-label {
+    width: 100%;
+    height: calc(var(--u) * 3.5);
+    background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+    border: 1px solid #ffcc00;
+    border-radius: 2px;
+    padding: calc(var(--u) * 0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: calc(var(--u) * 0.8);
+    font-weight: 900;
+    color: #ffff00;
+    text-align: center;
+    text-shadow: 1px 1px 2px #000;
+    letter-spacing: .1em;
+    overflow: hidden;
+  }
+
+  .vhs-reels {
+    width: 100%;
+    height: calc(var(--u) * 2);
+    display: flex; gap: calc(var(--u) * 0.4); justify-content: center; align-items: center;
+    margin-top: calc(var(--u) * 0.4);
+  }
+
+  .reel {
+    width: calc(var(--u) * 1.2);
+    height: calc(var(--u) * 1.2);
+    background: radial-gradient(circle at 30% 30%, #555, #111);
+    border-radius: 50%;
+    border: 1px solid #222;
+    position: relative;
+  }
+  .reel::before {
+    content: '';
+    position: absolute;
+    inset: 30%;
+    background: #000;
+    border-radius: 50%;
   }
 
   .vcr-display {
@@ -294,6 +354,21 @@
   }
   .vcr-color:hover { transform: scale(1.1); }
   .vcr-color:active { transform: scale(0.95); }
+
+  .color-preview {
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; pointer-events: none;
+  }
+  .color-preview.show { display: flex; pointer-events: auto; }
+  .color-preview-swatch {
+    width: calc(var(--u) * 8); height: calc(var(--u) * 8);
+    border-radius: 50%;
+    border: 2px solid #333;
+    box-shadow: 0 0 calc(var(--u) * 3) currentColor;
+    animation: popIn .2s ease;
+  }
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
   /* Hidden meter elements (kept for JS compatibility, not displayed) */
   .meters { display: none; }
@@ -378,7 +453,7 @@
   /* ── SUNY remote in front of VCR ──────────────────────────────── */
   .remote {
     position: fixed; left: calc(50% + min(35vw, calc(var(--u) * 60)) + var(--u) * 1); bottom: calc(var(--u) * 1.2);
-    transform: none;
+    transform-origin: bottom left;
     width: calc(var(--u) * 8.4);
     background: linear-gradient(135deg, #1a1a22 0%, #0d0d12 100%);
     border: 1px solid #33333f;
@@ -387,7 +462,9 @@
     display: flex; flex-direction: column; gap: calc(var(--u) * 0.6);
     box-shadow: 0 0 calc(var(--u) * 2) var(--neon-dim);
     z-index: 8;
+    transition: transform .2s ease;
   }
+  .remote:hover { transform: scale(3); }
   .remote-brand {
     text-align: center; font-size: calc(var(--u) * 1.2); font-weight: 900;
     letter-spacing: .28em; color: var(--neon); text-shadow: 0 0 calc(var(--u) * 0.8) var(--neon);
@@ -454,6 +531,13 @@
 
       <div class="stack">
         <div class="vcr">
+          <div class="vhs-tape" id="vhsTape" title="Click to edit title">
+            <div class="vhs-label" id="vhsLabel">BATMAN</div>
+            <div class="vhs-reels">
+              <div class="reel"></div>
+              <div class="reel"></div>
+            </div>
+          </div>
           <div class="vcr-display" id="vcrDisplay" title="Click to set the time">12:00</div>
           <div class="vcr-power"></div>
           <div class="vcr-color" id="vcrColor" title="Change neon color"></div>
@@ -491,6 +575,10 @@
       <div class="badge">DZ</div>
     </div>
   </div>
+</div>
+
+<div class="color-preview" id="colorPreview">
+  <div class="color-preview-swatch" id="colorSwatch"></div>
 </div>
 
 <div class="remote">
@@ -960,6 +1048,31 @@
   screenEl.addEventListener('play', updateRemoteDisplay);
   screenEl.addEventListener('pause', updateRemoteDisplay);
 
+  // ── VHS Tape title editor ──────────────────────────────────────
+  var vhsTape = document.getElementById('vhsTape');
+  var vhsLabel = document.getElementById('vhsLabel');
+  var currentTitle = 'BATMAN';
+
+  vhsTape.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var newTitle = prompt('VHS Title:', currentTitle);
+    if (newTitle && newTitle.trim()) {
+      currentTitle = newTitle.trim().toUpperCase().slice(0, 20);
+      vhsLabel.textContent = currentTitle;
+      try {
+        localStorage.setItem('dz-recroom-vhs-title', currentTitle);
+      } catch (e) { /* private mode */ }
+    }
+  });
+
+  try {
+    var savedTitle = localStorage.getItem('dz-recroom-vhs-title');
+    if (savedTitle) {
+      currentTitle = savedTitle;
+      vhsLabel.textContent = currentTitle;
+    }
+  } catch (e) { /* ignore */ }
+
   // ── VCR display and easter eggs ───────────────────────────────
   var vcrDisplay = document.getElementById('vcrDisplay');
   var vcrColor = document.getElementById('vcrColor');
@@ -998,6 +1111,18 @@
     ['Magenta', '#ff00ff'],
   ];
   var specIx = 0;
+  var colorPreview = document.getElementById('colorPreview');
+  var colorSwatch = document.getElementById('colorSwatch');
+
+  function showColorPreview(hex) {
+    colorSwatch.style.background = hex;
+    colorSwatch.style.color = hex;
+    colorSwatch.style.boxShadow = '0 0 ' + (3 * 1) + 'vh ' + hex;
+    colorPreview.classList.add('show');
+    setTimeout(function () {
+      colorPreview.classList.remove('show');
+    }, 1200);
+  }
 
   vcrColor.addEventListener('click', function () {
     specIx = (specIx + 1) % SPECTRUM.length;
@@ -1005,6 +1130,12 @@
     root.style.setProperty('--neon', hex);
     root.style.setProperty('--neon-soft', hex + '55');
     root.style.setProperty('--neon-dim', hex + '22');
+    showColorPreview(hex);
+  });
+
+  vcrColor.addEventListener('mouseenter', function () {
+    var hex = SPECTRUM[specIx][1];
+    showColorPreview(hex);
   });
 })();
 </script>
