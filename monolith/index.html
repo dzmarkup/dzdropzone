@@ -181,17 +181,18 @@
   // ── starfield ──────────────────────────────────────────────────
 
   var STAR_COUNT = 120;
-  var PLANET_COUNT = 3;
   var DRIFT_SPEED = [4, 6, 8, 10, 12]; // seconds for different star sizes
-  var PLANET_SPEEDS = [20, 24, 28, 32]; // slower for planets
+  var PLANET_SPEEDS = [22, 26, 30, 34, 38, 42]; // varied speeds for planets
 
   var PLANET_COLORS = [
-    { base: '#e6a857', name: 'ochre' },
-    { base: '#7b4397', name: 'purple' },
-    { base: '#4a90e2', name: 'blue' },
-    { base: '#e74c3c', name: 'rust' },
-    { base: '#16a085', name: 'teal' },
-    { base: '#f39c12', name: 'amber' },
+    '#e6a857', '#d4917c', '#c67b5c', '#a85a3d', // earth tones
+    '#7b4397', '#9d5fc7', '#8b3a8b', '#6b2c6b', // purples
+    '#4a90e2', '#3498db', '#2980b9', '#1e5a96', // blues
+    '#e74c3c', '#c0392b', '#d35400', '#e67e22', // reds/rust
+    '#16a085', '#1abc9c', '#27ae60', '#2ecc71', // teals/greens
+    '#f39c12', '#f1c40f', '#e8b71b', '#d4af37', // golds
+    '#95a5a6', '#bdc3c7', '#34495e', '#ecf0f1', // grays/whites
+    '#3f51b5', '#673ab7', '#9c27b0', '#e91e63', // vibrant mix
   ];
 
   function createStars() {
@@ -212,55 +213,69 @@
 
       starfield.appendChild(star);
     }
+  }
 
-    // Add occasional planets
-    for (var p = 0; p < PLANET_COUNT; p++) {
-      var planet = document.createElement('div');
-      planet.className = 'planet';
+  function generatePlanet() {
+    var planet = document.createElement('div');
+    planet.className = 'planet';
 
-      var size = Math.random() * 8 + 4;
-      var top = Math.random() * 70 + 15; // keep planets more toward center
-      var speed = PLANET_SPEEDS[Math.floor(Math.random() * PLANET_SPEEDS.length)];
-      var color = PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)];
-      var hasRings = Math.random() > 0.6; // 40% chance of rings
+    // Wide size range for variety
+    var size = Math.random() * 14 + 2.5; // 2.5vh to 16.5vh
+    var top = Math.random() * 60 + 20; // keep toward center-ish
+    var speed = PLANET_SPEEDS[Math.floor(Math.random() * PLANET_SPEEDS.length)];
+    var color = PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)];
+    var hasRings = Math.random() > 0.55; // 45% chance of rings
+    var moonChance = Math.random();
 
-      planet.style.width = size + 'vh';
-      planet.style.height = size + 'vh';
-      planet.style.top = top + '%';
-      planet.style.background = color.base;
-      planet.style.boxShadow = '0 0 ' + (size / 2) + 'vh ' + color.base + '80';
-      planet.style.animationDuration = speed + 's';
-      planet.style.animationDelay = (Math.random() * speed * 2) + 's';
+    planet.style.width = size + 'vh';
+    planet.style.height = size + 'vh';
+    planet.style.top = top + '%';
+    planet.style.background = color;
+    planet.style.boxShadow = '0 0 ' + (size / 2.5) + 'vh ' + color + '80';
+    planet.style.animationDuration = speed + 's';
+    planet.style.animationDelay = '0s';
 
-      if (hasRings) {
-        planet.classList.add('ringed');
-      }
-
-      // Add 1-2 moons occasionally
-      if (Math.random() > 0.5) {
-        var moonCount = Math.random() > 0.5 ? 1 : 2;
-        for (var m = 0; m < moonCount; m++) {
-          var moon = document.createElement('div');
-          moon.className = 'moon';
-          var moonSize = size * (0.2 + Math.random() * 0.15);
-          var moonDist = size * (0.7 + Math.random() * 0.4);
-          var moonAngle = (Math.PI * 2 / moonCount) * m + Math.random() * 0.5;
-
-          moon.style.width = moonSize + 'vh';
-          moon.style.height = moonSize + 'vh';
-          moon.style.left = (moonDist * Math.cos(moonAngle)) + 'vh';
-          moon.style.top = (moonDist * Math.sin(moonAngle)) + 'vh';
-          moon.style.boxShadow = '0 0 ' + (moonSize / 3) + 'vh rgba(200,200,200,0.6)';
-
-          planet.appendChild(moon);
-        }
-      }
-
-      starfield.appendChild(planet);
+    if (hasRings) {
+      planet.classList.add('ringed');
     }
+
+    // Moons: varied count and distribution
+    if (moonChance > 0.3) { // 70% have moons
+      var moonCount = Math.floor(Math.random() * 4) + 1; // 1-4 moons
+      for (var m = 0; m < moonCount; m++) {
+        var moon = document.createElement('div');
+        moon.className = 'moon';
+        var moonSize = size * (0.1 + Math.random() * 0.25); // 0.1x to 0.35x planet
+        var moonDist = size * (0.6 + Math.random() * 0.6); // varied orbit distance
+        var moonAngle = (Math.PI * 2 / moonCount) * m + Math.random() * Math.PI;
+
+        moon.style.width = moonSize + 'vh';
+        moon.style.height = moonSize + 'vh';
+        moon.style.left = (moonDist * Math.cos(moonAngle)) + 'vh';
+        moon.style.top = (moonDist * Math.sin(moonAngle)) + 'vh';
+        moon.style.boxShadow = '0 0 ' + (moonSize / 3) + 'vh rgba(200,200,200,0.6)';
+
+        planet.appendChild(moon);
+      }
+    }
+
+    return planet;
   }
 
   createStars();
+
+  // Generate initial planets with varied delays
+  for (var pi = 0; pi < 3; pi++) {
+    var delay = (Math.random() * 20000) + 5000; // stagger them
+    setTimeout(function () {
+      starfield.appendChild(generatePlanet());
+    }, delay);
+  }
+
+  // Periodically add new planets (every 30-50 seconds)
+  setInterval(function () {
+    starfield.appendChild(generatePlanet());
+  }, 35000 + Math.random() * 15000);
 
   // ── playing something ───────────────────────────────────────────
 
