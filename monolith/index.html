@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Monolith — DZ Drop Zone</title>
+
+<style>
+  :root {
+    --u: 1vh;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden;
+    background: #000;
+    color: #fff;
+    font: 500 14px/1.4 system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── the void ──────────────────────────────────────────────────── */
+
+  .void {
+    position: fixed; inset: 0;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .starfield {
+    position: absolute; inset: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 2px #fff;
+    animation: drift linear infinite;
+  }
+
+  @keyframes drift {
+    0% { left: 100%; }
+    100% { left: -1vh; }
+  }
+
+  .planet {
+    position: absolute;
+    border-radius: 50%;
+    animation: driftPlanet linear infinite;
+  }
+
+  @keyframes driftPlanet {
+    0% { left: 100%; }
+    100% { left: calc(-20vh); }
+  }
+
+  .planet.ringed::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    border: 2px solid rgba(200, 150, 100, 0.4);
+    border-radius: 50%;
+    transform: rotateX(75deg);
+  }
+
+  .moon {
+    position: absolute;
+    background: #ddd;
+    border-radius: 50%;
+  }
+
+  /* ── screen / playback area ──────────────────────────────────── */
+
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .screen video {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .idle {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: #666;
+    font-size: calc(var(--u) * 2);
+    line-height: 1.6;
+    padding: 0 8%;
+  }
+
+  .idle[hidden], .screen video[hidden] { display: none; }
+
+  /* ── shelf of videos, right side ───────────────────────────────── */
+
+  .shelf {
+    position: fixed; top: 0; right: 0; z-index: 6;
+    width: min(21vw, 300px); height: 100%;
+    padding: calc(var(--u) * 2.4) calc(var(--u) * 1.8);
+    overflow-y: auto;
+    background: linear-gradient(to left, rgba(0,0,0,.94), rgba(0,0,0,.6) 70%, transparent);
+    opacity: .1; pointer-events: none;
+    transition: opacity .28s ease;
+  }
+
+  .shelf.awake, .shelf:focus-within { opacity: 1; pointer-events: auto; }
+
+  .shelf-title {
+    font-size: calc(var(--u) * 1.4);
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: calc(var(--u) * 1.6);
+  }
+
+  .shelf-note { font-size: calc(var(--u) * 1.4); color: #666; line-height: 1.7; }
+  .shelf-note a { color: #aaa; }
+
+  .tape {
+    display: flex; align-items: center; gap: calc(var(--u) * 1);
+    width: 100%; margin-bottom: calc(var(--u) * .9);
+    padding: calc(var(--u) * .7); border-radius: calc(var(--u) * .5);
+    background: #1a1a1a; border: 1px solid #333; color: #ccc;
+    font: inherit; font-size: calc(var(--u) * 1.35); text-align: left; cursor: pointer;
+  }
+  .tape:hover { border-color: #666; }
+  .tape.on { border-color: #999; box-shadow: 0 0 calc(var(--u) * 1.4) rgba(255,255,255,.1); }
+
+  .tape .tn {
+    width: calc(var(--u) * 8); height: calc(var(--u) * 4.5); flex: 0 0 auto;
+    object-fit: cover; background: #0a0a0a; border-radius: 2px;
+  }
+
+  .tape .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── back link ─────────────────────────────────────────────────── */
+
+  .back {
+    position: fixed; left: calc(var(--u) * 2); top: calc(var(--u) * 2); z-index: 7;
+    color: #666; text-decoration: none; font-size: calc(var(--u) * 1.35);
+    letter-spacing: .16em; text-transform: uppercase;
+  }
+  .back:hover { color: #aaa; }
+
+  body.dragging .void { outline: 2px dashed #666; outline-offset: calc(var(--u) * -1); }
+</style>
+</head>
+<body>
+
+<a class="back" href="../">&larr; Drop Zone</a>
+
+<div class="void">
+  <div class="starfield" id="starfield"></div>
+  <div class="screen">
+    <video id="screen" hidden playsinline controls></video>
+    <div class="idle" id="idle">Pick something from the shelf,<br>or drop it into the void</div>
+  </div>
+</div>
+
+<aside class="shelf" id="shelf" tabindex="0">
+  <div class="shelf-title">Your videos</div>
+  <div class="shelf-note" id="shelfNote">Looking for your folder…</div>
+</aside>
+
+<input type="file" id="picker" accept="video/*,image/*,audio/*" hidden>
+
+<script src="../folder.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var screenEl = document.getElementById('screen');
+  var idle = document.getElementById('idle');
+  var starfield = document.getElementById('starfield');
+
+  // ── starfield ──────────────────────────────────────────────────
+
+  var STAR_COUNT = 120;
+  var DRIFT_SPEED = [4, 6, 8, 10, 12]; // seconds for different star sizes
+  var PLANET_SPEEDS = [22, 26, 30, 34, 38, 42]; // varied speeds for planets
+
+  var PLANET_COLORS = [
+    '#e6a857', '#d4917c', '#c67b5c', '#a85a3d', // earth tones
+    '#7b4397', '#9d5fc7', '#8b3a8b', '#6b2c6b', // purples
+    '#4a90e2', '#3498db', '#2980b9', '#1e5a96', // blues
+    '#e74c3c', '#c0392b', '#d35400', '#e67e22', // reds/rust
+    '#16a085', '#1abc9c', '#27ae60', '#2ecc71', // teals/greens
+    '#f39c12', '#f1c40f', '#e8b71b', '#d4af37', // golds
+    '#95a5a6', '#bdc3c7', '#34495e', '#ecf0f1', // grays/whites
+    '#3f51b5', '#673ab7', '#9c27b0', '#e91e63', // vibrant mix
+  ];
+
+  function createStars() {
+    starfield.innerHTML = '';
+    for (var i = 0; i < STAR_COUNT; i++) {
+      var star = document.createElement('div');
+      star.className = 'star';
+
+      var size = Math.random() * 2 + 0.5;
+      var top = Math.random() * 100;
+      var speed = DRIFT_SPEED[Math.floor(Math.random() * DRIFT_SPEED.length)];
+
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.top = top + '%';
+      star.style.animationDuration = speed + 's';
+      star.style.animationDelay = (Math.random() * speed) + 's';
+
+      starfield.appendChild(star);
+    }
+  }
+
+  function generatePlanet() {
+    var planet = document.createElement('div');
+    planet.className = 'planet';
+
+    // Wide size range for variety
+    var size = Math.random() * 14 + 2.5; // 2.5vh to 16.5vh
+    var top = Math.random() * 60 + 20; // keep toward center-ish
+    var speed = PLANET_SPEEDS[Math.floor(Math.random() * PLANET_SPEEDS.length)];
+    var color = PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)];
+    var hasRings = Math.random() > 0.55; // 45% chance of rings
+    var moonChance = Math.random();
+
+    planet.style.width = size + 'vh';
+    planet.style.height = size + 'vh';
+    planet.style.top = top + '%';
+    planet.style.background = color;
+    planet.style.boxShadow = '0 0 ' + (size / 2.5) + 'vh ' + color + '80';
+    planet.style.animationDuration = speed + 's';
+    planet.style.animationDelay = '0s';
+
+    if (hasRings) {
+      planet.classList.add('ringed');
+    }
+
+    // Moons: varied count and distribution
+    if (moonChance > 0.3) { // 70% have moons
+      var moonCount = Math.floor(Math.random() * 4) + 1; // 1-4 moons
+      for (var m = 0; m < moonCount; m++) {
+        var moon = document.createElement('div');
+        moon.className = 'moon';
+        var moonSize = size * (0.1 + Math.random() * 0.25); // 0.1x to 0.35x planet
+        var moonDist = size * (0.6 + Math.random() * 0.6); // varied orbit distance
+        var moonAngle = (Math.PI * 2 / moonCount) * m + Math.random() * Math.PI;
+
+        moon.style.width = moonSize + 'vh';
+        moon.style.height = moonSize + 'vh';
+        moon.style.left = (moonDist * Math.cos(moonAngle)) + 'vh';
+        moon.style.top = (moonDist * Math.sin(moonAngle)) + 'vh';
+        moon.style.boxShadow = '0 0 ' + (moonSize / 3) + 'vh rgba(200,200,200,0.6)';
+
+        planet.appendChild(moon);
+      }
+    }
+
+    return planet;
+  }
+
+  createStars();
+
+  // Generate initial planets with varied delays
+  for (var pi = 0; pi < 3; pi++) {
+    var delay = (Math.random() * 20000) + 5000; // stagger them
+    setTimeout(function () {
+      starfield.appendChild(generatePlanet());
+    }, delay);
+  }
+
+  // Periodically add new planets (every 30-50 seconds)
+  setInterval(function () {
+    starfield.appendChild(generatePlanet());
+  }, 35000 + Math.random() * 15000);
+
+  // ── playing something ───────────────────────────────────────────
+
+  var showingUrl = null;
+
+  function playFile(file, row) {
+    if (showingUrl) URL.revokeObjectURL(showingUrl);
+    showingUrl = URL.createObjectURL(file);
+
+    if (/^image\//.test(file.type)) {
+      screenEl.hidden = true;
+      screenEl.pause();
+      document.body.classList.remove('playing');
+      idle.hidden = false;
+      idle.textContent = '';
+      idle.style.background = '#000 url("' + showingUrl + '") center/contain no-repeat';
+    } else if (/^audio\//.test(file.type)) {
+      screenEl.hidden = true;
+      idle.hidden = false;
+      idle.textContent = '♪ ' + (file.name || '').slice(0, 20).toUpperCase();
+      idle.style.background = 'radial-gradient(circle at 30% 50%, rgba(100,100,150,.15), #000)';
+      screenEl.src = showingUrl;
+      document.body.classList.add('playing');
+      screenEl.play().catch(function () {
+        screenEl.muted = true;
+        screenEl.play().catch(function () {});
+      });
+    } else {
+      idle.hidden = true;
+      idle.style.background = '';
+      screenEl.hidden = false;
+      screenEl.src = showingUrl;
+      document.body.classList.add('playing');
+      screenEl.play().catch(function () {
+        screenEl.muted = true;
+        screenEl.play().catch(function () {});
+      });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.tape.on'),
+      function (el) { el.classList.remove('on'); });
+    if (row) row.classList.add('on');
+  }
+
+  screenEl.addEventListener('play', function () {
+    document.body.classList.add('playing');
+  });
+  screenEl.addEventListener('pause', function () { document.body.classList.remove('playing'); });
+  screenEl.addEventListener('ended', function () { document.body.classList.remove('playing'); });
+
+  // ── the shelf, read from the folder ─────────────────────────────
+
+  var shelf = document.getElementById('shelf');
+  var note = document.getElementById('shelfNote');
+
+  function say(html) { note.innerHTML = html; note.hidden = false; }
+
+  function buildShelf(files) {
+    Array.prototype.forEach.call(shelf.querySelectorAll('.tape'), function (el) { el.remove(); });
+    if (!files.length) {
+      say('Nothing in <b>Videos</b> yet. Drop one in the void, or save one ' +
+          'from <a href="../dzvidstitch/">DZVidStitch</a>.');
+      return;
+    }
+    note.hidden = true;
+    files.forEach(function (f) {
+      var row = document.createElement('button');
+      row.type = 'button'; row.className = 'tape';
+      var tn = document.createElement('img'); tn.className = 'tn'; tn.alt = '';
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = f.name;
+      row.appendChild(tn); row.appendChild(nm);
+      row.addEventListener('click', function () {
+        row.blur();
+        f.handle.getFile().then(function (file) { playFile(file, row); }).catch(function () {});
+      });
+      shelf.appendChild(row);
+
+      f.handle.getFile().then(function (file) {
+        var v = document.createElement('video');
+        var u = URL.createObjectURL(file);
+        var done = false;
+        var finish = function () { if (!done) { done = true; URL.revokeObjectURL(u); } };
+        v.muted = true; v.preload = 'metadata';
+        v.onloadeddata = function () {
+          try {
+            var c = document.createElement('canvas');
+            c.width = 96; c.height = 54;
+            c.getContext('2d').drawImage(v, 0, 0, 96, 54);
+            tn.src = c.toDataURL('image/jpeg', .7);
+          } catch (e) { /* codec mismatch */ }
+          finish();
+        };
+        v.onerror = finish;
+        setTimeout(finish, 5000);
+        v.src = u; v.currentTime = 0.6;
+      }).catch(function () {});
+    });
+  }
+
+  addEventListener('mousemove', function (e) {
+    var zone = Math.max(260, innerWidth * 0.21);
+    shelf.classList.toggle('awake', e.clientX > innerWidth - zone);
+  });
+  addEventListener('mouseleave', function () { shelf.classList.remove('awake'); });
+
+  function loadShelf() {
+    if (!window.DZFolder || !DZFolder.isSupported()) {
+      say('A folder needs Chrome, Edge, Brave or Opera on a computer. You can ' +
+          'still drop a video into the void.');
+      return;
+    }
+    DZFolder.reconnect(false).then(function (dir) {
+      if (!dir) {
+        say('No folder connected. Connect one in the <a href="../">Drop Zone</a> ' +
+            'and your videos turn up here.');
+        return;
+      }
+      return DZFolder.list(2).then(function (tree) {
+        var videos = tree.dirs.filter(function (d) { return d.name === 'Videos'; })[0];
+        if (!videos) { buildShelf([]); return; }
+        var all = videos.files.concat(videos.dirs.reduce(function (a, d) {
+          return a.concat(d.files);
+        }, []));
+        all.sort(function (a, b) { return b.modified - a.modified; });
+        buildShelf(all);
+      });
+    }).catch(function () { say('That folder could not be read just now.'); });
+  }
+  loadShelf();
+
+  // ── dropping into the void ─────────────────────────────────────
+
+  var picker = document.getElementById('picker');
+
+  function take(files) {
+    var f = Array.prototype.filter.call(files || [], function (x) {
+      return /^(video|image|audio)\//.test(x.type);
+    })[0];
+    if (f) playFile(f, null);
+  }
+
+  var depth = 0;
+  function hasFiles(e) {
+    return e.dataTransfer &&
+      Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+  }
+
+  addEventListener('dragenter', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth++; document.body.classList.add('dragging');
+  });
+  addEventListener('dragover', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+  });
+  addEventListener('dragleave', function () {
+    depth = Math.max(0, depth - 1);
+    if (!depth) document.body.classList.remove('dragging');
+  });
+  addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0;
+    document.body.classList.remove('dragging');
+    take(e.dataTransfer.files);
+  });
+
+  idle.addEventListener('click', function () { picker.click(); });
+  picker.addEventListener('change', function () { take(picker.files); });
+})();
+</script>
+</body>
+</html>
