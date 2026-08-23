@@ -114,8 +114,8 @@
 
   .unit {
     position: relative; z-index: 1;
-    display: flex; align-items: flex-end; justify-content: center;
-    gap: calc(var(--u) * 8);
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 0; width: 100%;
   }
 
   /* ── speakers ──────────────────────────────────────────────────── */
@@ -295,22 +295,6 @@
   .vcr-color:hover { transform: scale(1.1); }
   .vcr-color:active { transform: scale(0.95); }
 
-  /* ── retro poster ──────────────────────────────────────────────── */
-  .poster {
-    position: fixed; top: calc(var(--u) * 10);
-    width: calc(var(--u) * 28); height: calc(var(--u) * 42);
-    background: linear-gradient(135deg, #1a0a2e 0%, #0f0520 100%);
-    border: calc(var(--u) * 0.4) solid #d4af37;
-    border-radius: calc(var(--u) * 0.4);
-    box-shadow: 0 0 calc(var(--u) * 3) rgba(212,175,55,.3),
-      0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0,0,0,.8);
-    z-index: 2; pointer-events: none;
-    overflow: hidden;
-  }
-  .poster.left { left: calc(var(--u) * 2); }
-  .poster.right { right: calc(var(--u) * 2); }
-  .poster svg { width: 100%; height: 100%; display: block; }
-
   /* Hidden meter elements (kept for JS compatibility, not displayed) */
   .meters { display: none; }
   .meter { display: none; }
@@ -362,7 +346,7 @@
 
   .controls {
     position: fixed; left: calc(var(--u) * 2); bottom: calc(var(--u) * 2); z-index: 7;
-    display: flex; flex-direction: column; gap: calc(var(--u) * 1);
+    display: none; flex-direction: column; gap: calc(var(--u) * 1);
     font-size: calc(var(--u) * 1.25);
   }
   .row { display: flex; align-items: center; gap: calc(var(--u) * .7); }
@@ -393,8 +377,8 @@
      speakers and let the screen have the room. */
   /* ── SUNY remote in front of VCR ──────────────────────────────── */
   .remote {
-    position: fixed; left: 50%; bottom: calc(var(--u) * 1.2);
-    transform: translateX(-50%);
+    position: fixed; left: calc(50% + min(35vw, calc(var(--u) * 60)) + var(--u) * 1); bottom: calc(var(--u) * 1.2);
+    transform: none;
     width: calc(var(--u) * 8.4);
     background: linear-gradient(135deg, #1a1a22 0%, #0d0d12 100%);
     border: 1px solid #33333f;
@@ -451,96 +435,6 @@
   <div class="bias"></div>
   <div class="bias inner"></div>
   <div class="bias floor"></div>
-
-  <div class="poster left">
-    <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-      <!-- Sunset gradient background -->
-      <defs>
-        <linearGradient id="sunset" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#ff1493;stop-opacity:1" />
-          <stop offset="40%" style="stop-color:#ff6b9d;stop-opacity:1" />
-          <stop offset="70%" style="stop-color:#ffa500;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#1a0a2e;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="600" fill="url(#sunset)"/>
-
-      <!-- Lamborghini silhouette -->
-      <g id="lambo" transform="translate(200, 320)">
-        <ellipse cx="0" cy="0" rx="140" ry="50" fill="#1a1a1a" opacity="0.95"/>
-        <path d="M -140 -35 Q -100 -55 -40 -50 L -20 -40 Z" fill="#1a1a1a"/>
-        <path d="M -20 -40 L 20 -45 L 30 -20 L -10 -15 Z" fill="#0a0a0a" opacity="0.8"/>
-        <path d="M -10 -15 L 30 -20 L 50 0 L -5 5 Z" fill="#1a1a1a"/>
-        <path d="M 50 0 L 120 -20 L 140 -35 L 140 0 Z" fill="#1a1a1a"/>
-        <path d="M 120 -20 L 140 -35 L 140 35 L 120 20 Z" fill="#1a1a1a" opacity="0.9"/>
-        <circle cx="-60" cy="50" r="18" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
-        <circle cx="80" cy="50" r="20" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
-      </g>
-
-      <!-- Girl silhouette -->
-      <g id="girl" transform="translate(140, 250)">
-        <circle cx="0" cy="-45" r="18" fill="#1a1a1a"/>
-        <path d="M -15 -50 Q -25 -55 -20 -35 Q -30 -30 -20 -20" fill="#1a1a1a" opacity="0.8"/>
-        <ellipse cx="0" cy="-15" rx="20" ry="25" fill="#1a1a1a"/>
-        <path d="M -18 -20 L -40 -10" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
-        <path d="M 18 -20 L 35 5" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
-        <ellipse cx="0" cy="15" rx="18" ry="20" fill="#1a1a1a"/>
-        <path d="M -12 35 L -8 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
-        <path d="M 12 35 L 16 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
-        <circle cx="20" cy="75" r="6" fill="#1a1a1a"/>
-      </g>
-
-      <line x1="20" y1="80" x2="380" y2="80" stroke="#ff1493" stroke-width="2" opacity="0.6"/>
-      <line x1="40" y1="520" x2="360" y2="520" stroke="#ffa500" stroke-width="2" opacity="0.6"/>
-      <text x="200" y="570" font-family="Arial, sans-serif" font-size="24" font-weight="bold"
-            text-anchor="middle" fill="#d4af37" opacity="0.7" letter-spacing="3">LAMBO</text>
-    </svg>
-  </div>
-
-  <div class="poster right">
-    <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-      <!-- Sunset gradient background -->
-      <defs>
-        <linearGradient id="sunset2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#ff1493;stop-opacity:1" />
-          <stop offset="40%" style="stop-color:#ff6b9d;stop-opacity:1" />
-          <stop offset="70%" style="stop-color:#ffa500;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#1a0a2e;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="600" fill="url(#sunset2)"/>
-
-      <!-- Testarossa silhouette (wider, flatter profile) -->
-      <g id="testarossa" transform="translate(200, 320) scale(-1, 1)">
-        <ellipse cx="0" cy="0" rx="155" ry="48" fill="#1a1a1a" opacity="0.95"/>
-        <path d="M -155 -32 Q -110 -58 -30 -52 L 0 -42 Z" fill="#1a1a1a"/>
-        <path d="M 0 -42 L 35 -48 L 45 -18 L 5 -15 Z" fill="#0a0a0a" opacity="0.8"/>
-        <path d="M 5 -15 L 45 -18 L 65 8 L 10 12 Z" fill="#1a1a1a"/>
-        <path d="M 65 8 L 135 -15 L 155 -32 L 155 15 Z" fill="#1a1a1a"/>
-        <path d="M 120 -10 L 155 -32 L 155 35 L 125 25 Z" fill="#1a1a1a" opacity="0.9"/>
-        <circle cx="-65" cy="50" r="20" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
-        <circle cx="85" cy="52" r="22" fill="#0a0a0a" stroke="#666" stroke-width="2"/>
-      </g>
-
-      <!-- Girl silhouette (mirrored) -->
-      <g id="girl2" transform="translate(260, 250)">
-        <circle cx="0" cy="-45" r="18" fill="#1a1a1a"/>
-        <path d="M 15 -50 Q 25 -55 20 -35 Q 30 -30 20 -20" fill="#1a1a1a" opacity="0.8"/>
-        <ellipse cx="0" cy="-15" rx="20" ry="25" fill="#1a1a1a"/>
-        <path d="M 18 -20 L 40 -10" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
-        <path d="M -18 -20 L -35 5" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
-        <ellipse cx="0" cy="15" rx="18" ry="20" fill="#1a1a1a"/>
-        <path d="M 12 35 L 8 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
-        <path d="M -12 35 L -16 65" stroke="#1a1a1a" stroke-width="9" stroke-linecap="round"/>
-        <circle cx="-20" cy="75" r="6" fill="#1a1a1a"/>
-      </g>
-
-      <line x1="20" y1="80" x2="380" y2="80" stroke="#ff1493" stroke-width="2" opacity="0.6"/>
-      <line x1="40" y1="520" x2="360" y2="520" stroke="#ffa500" stroke-width="2" opacity="0.6"/>
-      <text x="200" y="570" font-family="Arial, sans-serif" font-size="24" font-weight="bold"
-            text-anchor="middle" fill="#d4af37" opacity="0.7" letter-spacing="3">TESTA</text>
-    </svg>
-  </div>
 
   <div class="unit">
     <div class="speaker">
