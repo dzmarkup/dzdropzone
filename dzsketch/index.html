@@ -17,6 +17,7 @@
 <script src="../dzsave.js"></script>
 <script src="./layers.js"></script>
 <script src="./magic-wand.js"></script>
+<script src="./eyedropper.js"></script>
 </head>
 <body>
 <x-dc>
@@ -53,6 +54,13 @@
         <button onClick="{{ toggleSelectMode }}" style="{{ selectBtnStyle }}">Select</button>
         <button onClick="{{ toggleZoomMode }}" style="{{ zoomBtnStyle }}">Zoom</button>
         <button onClick="{{ toggleMagicWand }}" style="{{ magicWandBtnStyle }}">🪄 Wand</button>
+        <button onClick="{{ toggleEyedropper }}" style="{{ eyedropperBtnStyle }}">🎨 Pick</button>
+        <sc-if value="{{ eyedropperActive }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:6px;padding:0 8px;border-left:1px solid rgba(100,150,200,0.2);">
+            <div style="width:24px;height:24px;border:2px solid rgba(255,255,255,0.5);background:{{ eyedropperColor }};border-radius:4px;cursor:pointer;" title="{{ eyedropperColor }}"></div>
+            <span style="font-size:11px;color:#a9c1d6;font-family:monospace;">{{ eyedropperColor }}</span>
+          </div>
+        </sc-if>
         <sc-if value="{{ magicWandActive }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:center;gap:8px;padding:0 10px;">
             <label style="font-size:11px;color:#a9c1d6;letter-spacing:0.04em;text-transform:uppercase;">Mode:</label>
@@ -722,6 +730,10 @@ class Component extends DCLogic {
     if (e.key.toLowerCase() === 'w' && this.state.isDesktop) {
       const tag = (e.target && e.target.tagName) || '';
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); this.setState({ magicWandActive: !this.state.magicWandActive }); return; }
+    }
+    if (e.key.toLowerCase() === 'i' && this.state.isDesktop) {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); this.setState({ eyedropperActive: !this.state.eyedropperActive }); return; }
     }
     if ((e.key === 'Delete' || e.key === 'Backspace') && this.state.selectMode && this.state.selectedIds.length) {
       e.preventDefault(); this.deleteSelected(); return;
@@ -1616,6 +1628,18 @@ class Component extends DCLogic {
       if (activeLayer && activeLayer.canvas) {
         this._magicWand.selectAt(activeLayer.canvas, x, y);
         this.redraw();
+      }
+      return;
+    }
+    // Eyedropper color picking
+    if (this.state.eyedropperActive) {
+      const rect = this.canvasAreaRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / this.getDisplayScale();
+      const y = (e.clientY - rect.top) / this.getDisplayScale();
+      const activeLayer = this._layersManager.getActiveLayer();
+      if (activeLayer && activeLayer.canvas) {
+        const color = this._eyedropper.sampleColor(activeLayer.canvas, x, y);
+        this.setState({ eyedropperColor: color.hex, color: color.hex });
       }
       return;
     }
@@ -3039,6 +3063,11 @@ class Component extends DCLogic {
       this._magicWand = new MagicWandTool();
     }
 
+    // Initialize Eyedropper if not already done
+    if (!this._eyedropper) {
+      this._eyedropper = new EyedropperTool();
+    }
+
     const newPageWVal = parseInt(this.state.newPageWDraft, 10), newPageHVal = parseInt(this.state.newPageHDraft, 10);
     const newPageValid = !isNaN(newPageWVal) && newPageWVal > 0 && !isNaN(newPageHVal) && newPageHVal > 0;
     const rectSizeInputStyle = newPageMode
@@ -3067,6 +3096,9 @@ class Component extends DCLogic {
     const setMagicWandMode = (e) => { this._magicWand.setMode(e.target.value); this.setState({ magicWandMode: e.target.value }); };
     const setMagicWandTolerance = (e) => { const val = e.target.value; this._magicWand.setTolerance(val); this.setState({ magicWandTolerance: val }); };
 
+    // Eyedropper handlers
+    const toggleEyedropper = () => { this.setState({ eyedropperActive: !this.state.eyedropperActive, eyedropperColor: this._eyedropper.getColor() }); };
+
     return {
       logoLeftRef, logoRightRef, dzLogoRef, unmarkBtnLabel, remarkBtnLabel,
       clearBtnLabel: showUndo ? 'Uncrop' : 'Clear',
@@ -3082,6 +3114,11 @@ class Component extends DCLogic {
       magicWandTolerance: this.state.magicWandTolerance || 25,
       magicWandBtnStyle: `width:100px;height:32px;display:flex;align-items:center;justify-content:center;background:${this.state.magicWandActive ? 'rgba(100,150,200,0.3)' : 'transparent'};border:1px solid ${this.state.magicWandActive ? 'rgba(100,150,200,0.6)' : 'rgba(255,255,255,0.25)'};color:#f2f2f3;font-family:var(--font-body,'Barlow',sans-serif);font-size:13px;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;`,
       toggleMagicWand, setMagicWandMode, setMagicWandTolerance,
+      // Eyedropper
+      eyedropperActive: this.state.eyedropperActive || false,
+      eyedropperColor: this.state.eyedropperColor || '#ffffff',
+      eyedropperBtnStyle: `width:80px;height:32px;display:flex;align-items:center;justify-content:center;background:${this.state.eyedropperActive ? 'rgba(100,150,200,0.3)' : 'transparent'};border:1px solid ${this.state.eyedropperActive ? 'rgba(100,150,200,0.6)' : 'rgba(255,255,255,0.25)'};color:#f2f2f3;font-family:var(--font-body,'Barlow',sans-serif);font-size:13px;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;`,
+      toggleEyedropper,
       clearBtnStyle: `width:78px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid ${showUndo ? '#ff1a2e' : 'rgba(255,255,255,0.25)'};color:#f2f2f3;font-family:var(--font-body,'Barlow',sans-serif);font-size:13px;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;`,
       loaded: this.state.loaded,
       notLoaded: !this.state.loaded,
