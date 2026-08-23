@@ -41,10 +41,10 @@
     animation: flyThrough linear infinite;
   }
 
-  @keyframes flyThrough {
+  @keyframes warpTunnel {
     0% {
       opacity: 0;
-      transform: translate(0, 0) scale(0.1);
+      transform: translate(calc((var(--star-x) - 50%) * 0.2), calc((var(--star-y) - 50%) * 0.2)) scale(0.2);
     }
     20% {
       opacity: 1;
@@ -54,8 +54,12 @@
     }
     100% {
       opacity: 0;
-      transform: translate(0, 100vh) scale(3);
+      transform: translate(calc((var(--star-x) - 50%) * 2.5), calc((var(--star-y) - 50%) * 2.5)) scale(3);
     }
+  }
+
+  .star {
+    animation: warpTunnel linear infinite;
   }
 
   /* ── screen / playback area ──────────────────────────────────── */
@@ -69,6 +73,7 @@
     width: 80%; height: 80%;
     object-fit: contain;
     display: block;
+    opacity: 0.5;
   }
 
   .idle {
@@ -186,6 +191,8 @@
       star.style.top = top + '%';
       star.style.animationDuration = speed + 's';
       star.style.animationDelay = (Math.random() * speed) + 's';
+      star.style.setProperty('--star-x', left);
+      star.style.setProperty('--star-y', top);
 
       starfield.appendChild(star);
     }
