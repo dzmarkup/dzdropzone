@@ -284,6 +284,70 @@
   }
   .vhs-tape:hover { transform: translate(-50%, -50%) translateY(calc(var(--u) * -0.5)); }
 
+  /* VHS tape poking out from left side of VCR */
+  .vhs-tape-eject {
+    position: absolute;
+    left: calc(var(--u) * -8.5);
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(var(--u) * 8.5);
+    height: calc(var(--u) * 5.2);
+    background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 5%, #3a3a3a 95%, #1a1a1a 100%);
+    border: 2px solid #0a0a0a;
+    border-radius: calc(var(--u) * 0.3);
+    padding: calc(var(--u) * 0.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    box-shadow:
+      0 calc(var(--u) * 0.4) 0 rgba(255,255,255,.1) inset,
+      0 calc(var(--u) * 1.6) calc(var(--u) * 4) rgba(0,0,0,1);
+    z-index: 5;
+  }
+
+  .vhs-eject-label {
+    width: 100%;
+    height: calc(var(--u) * 3.2);
+    background: linear-gradient(135deg, #c41e3a 0%, #a01830 50%, #8b0000 100%);
+    border: 2px solid #ffdd00;
+    border-radius: calc(var(--u) * 0.2);
+    padding: calc(var(--u) * 0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: calc(var(--u) * 0.75);
+    font-weight: 900;
+    color: #ffff00;
+    text-align: center;
+    text-shadow: 2px 2px 3px rgba(0,0,0,.9);
+    letter-spacing: .08em;
+    overflow: hidden;
+    word-break: break-word;
+    line-height: 0.9;
+  }
+
+  .vhs-eject-reels {
+    width: 100%;
+    height: calc(var(--u) * 1.6);
+    display: flex; gap: calc(var(--u) * 0.8); justify-content: center; align-items: center;
+    margin-top: calc(var(--u) * 0.2);
+    background: linear-gradient(to bottom, rgba(0,0,0,.3), transparent);
+  }
+
+  .reel-small {
+    width: calc(var(--u) * 1.2);
+    height: calc(var(--u) * 1.2);
+    background: radial-gradient(circle at 35% 35%, #777, #333 40%, #111 100%);
+    border-radius: 50%;
+    border: 1px solid #000;
+    box-shadow: inset 0 2px 4px rgba(150,150,150,.3), inset 0 -2px 4px rgba(0,0,0,.8);
+    position: relative;
+  }
+  .reel-small::before {
+    content: '';
+    position: absolute;
+    inset: 30%;
+    background: radial-gradient(circle at 40% 40%, #222, #000);
+    border-radius: 50%;
+    border: 1px solid #000;
+  }
+
   .vhs-label {
     width: 100%;
     height: calc(var(--u) * 6.8);
@@ -343,7 +407,9 @@
   }
 
   .vcr-display {
-    flex: 1;
+    flex: 0 0 auto;
+    margin-left: auto;
+    width: calc(var(--u) * 12);
     background: #000; border: 1px solid #0d0d12;
     border-radius: 2px; padding: calc(var(--u) * 0.6) calc(var(--u) * 0.9);
     text-align: center; min-height: calc(var(--u) * 2);
@@ -557,6 +623,14 @@
             <div class="vhs-reels">
               <div class="reel"></div>
               <div class="reel"></div>
+            </div>
+          </div>
+          <!-- Cassette poking out from left -->
+          <div class="vhs-tape-eject">
+            <div class="vhs-eject-label">BATMAN</div>
+            <div class="vhs-eject-reels">
+              <div class="reel-small"></div>
+              <div class="reel-small"></div>
             </div>
           </div>
           <div class="vcr-display" id="vcrDisplay" title="Click to set the time">12:00</div>
